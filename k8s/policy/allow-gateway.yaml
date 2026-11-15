@@ -1,0 +1,12 @@
+# Let the Gateway's Envoy (Cilium's `ingress` identity) reach the echo pods, and nothing else.
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-gateway
+  namespace: demo
+spec:
+  endpointSelector:
+    matchLabels:
+      app: echo
+  ingress:
+    - fromEntities: [ingress]

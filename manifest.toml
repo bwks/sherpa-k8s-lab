@@ -1,0 +1,46 @@
+name = "sherpa-kubernetes"
+
+[[talos_clusters]]
+name = "k8s"
+controllers = ["cp01", "cp02", "cp03"]
+workers = ["wrk01", "wrk02"]
+cni = "cilium"
+oidc = "kc01"
+vault = "vault01"
+
+[[nodes]]
+name = "cp01"
+model = "talos_linux"
+
+[[nodes]]
+name = "cp02"
+model = "talos_linux"
+
+[[nodes]]
+name = "cp03"
+model = "talos_linux"
+
+[[nodes]]
+name = "wrk01"
+model = "talos_linux"
+
+[[nodes]]
+name = "wrk02"
+model = "talos_linux"
+
+[[nodes]]
+name = "kc01"
+model = "keycloak_server"
+
+[[nodes]]
+name = "vault01"
+model = "hashicorp_vault"
+
+[[nodes]]
+name = "util"
+model = "ubuntu_linux"
+memory = 2048
+startup_scripts = ["install-tools.sh"]
+
+[nodes.boot_disk]
+size = 10

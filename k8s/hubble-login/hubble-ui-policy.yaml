@@ -1,0 +1,13 @@
+# Hubble UI accepts traffic only from the Gateway's Envoy (Cilium's `ingress` identity), so the
+# open address Sherpa gives it (.14) stops answering and the login cannot be bypassed.
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: hubble-ui-gateway-only
+  namespace: kube-system
+spec:
+  endpointSelector:
+    matchLabels:
+      k8s-app: hubble-ui
+  ingress:
+    - fromEntities: [ingress]

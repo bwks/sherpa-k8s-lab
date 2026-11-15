@@ -1,0 +1,76 @@
+# oauth2-proxy as the Gateway's external auth service for Hubble UI. It answers 200 for a
+# request with a valid session cookie of a `cluster-admins` member, and otherwise redirects the
+# browser to Keycloak's login page in the `sherpa` realm. ${KEYCLOAK_ISSUER} and ${GATEWAY_IP}
+# are filled in by envsubst. The client secret and cookie secret are in the `oauth2-proxy`
+# Secret, made at run time (see README).
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: oauth2-proxy
+  namespace: hubble-login
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: oauth2-proxy
+  template:
+    metadata:
+      labels:
+        app: oauth2-proxy
+    spec:
+      containers:
+        - name: oauth2-proxy
+          image: quay.io/oauth2-proxy/oauth2-proxy:v7.15.6
+          args:
+            - --http-address=0.0.0.0:4180
+            - --provider=keycloak-oidc
+            - --client-id=hubble
+            - --oidc-issuer-url=${KEYCLOAK_ISSUER}
+            - --provider-ca-file=/etc/lab-ca/ca.crt
+            - --redirect-url=https://${GATEWAY_IP}:8443/oauth2/callback
+            # The groups claim comes from the client's mapper; the realm has no `groups` scope.
+            - --scope=openid email profile
+            - --code-challenge-method=S256
+            - --allowed-group=cluster-admins
+            - --email-domain=*
+            - --upstream=static://200
+            - --reverse-proxy=true
+            - --skip-provider-button=true
+            - --cookie-secure=true
+          env:
+            - name: OAUTH2_PROXY_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: oauth2-proxy
+                  key: client-secret
+            - name: OAUTH2_PROXY_COOKIE_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: oauth2-proxy
+                  key: cookie-secret
+          ports:
+            - containerPort: 4180
+          readinessProbe:
+            httpGet:
+              path: /ping
+              port: 4180
+          volumeMounts:
+            - name: lab-ca
+              mountPath: /etc/lab-ca
+              readOnly: true
+      volumes:
+        - name: lab-ca
+          configMap:
+            name: lab-ca
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: oauth2-proxy
+  namespace: hubble-login
+spec:
+  selector:
+    app: oauth2-proxy
+  ports:
+    - port: 4180
+      targetPort: 4180

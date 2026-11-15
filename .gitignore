@@ -1,0 +1,4 @@
+.sherpa/
+# Made by the HTTPS Gateway steps.
+vault-intermediate.*
+intermediate-ca.ext

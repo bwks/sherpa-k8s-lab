@@ -1,0 +1,23 @@
+# Issues certificates from Vault's PKI engine on vault01, role `gateway`. cert-manager logs in
+# with a token of the `vault-issuer` service account, through the cluster's Vault auth method
+# `kubernetes-k8s` that Sherpa set up, as role `cert-manager`. The `lab-ca` Secret holds the lab
+# CA, which Vault's own certificate chains to. ${VAULT_ADDR} is filled in by envsubst.
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: vault
+  namespace: default
+spec:
+  vault:
+    server: ${VAULT_ADDR}
+    path: pki/sign/gateway
+    caBundleSecretRef:
+      name: lab-ca
+      key: ca.crt
+    auth:
+      kubernetes:
+        mountPath: /v1/auth/kubernetes-k8s
+        role: cert-manager
+        serviceAccountRef:
+          name: vault-issuer
+          audiences: [vault]
