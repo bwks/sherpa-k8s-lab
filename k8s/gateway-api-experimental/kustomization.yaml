@@ -1,0 +1,22 @@
+# Gateway API v1.6.3, experimental channel: the release of the standard-channel CRDs Sherpa
+# installs, plus experimental fields such as the HTTPRoute `ExternalAuth` filter the Hubble
+# login uses. The standard channel's `safe-upgrades` admission policy refuses experimental CRDs
+# over standard ones, so the README deletes it first, and the bundle's own copy of the policy is
+# left out here: applied in the same batch, it would refuse the bundle's CRDs too.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.6.3/experimental-install.yaml
+patches:
+  - patch: |-
+      $patch: delete
+      apiVersion: admissionregistration.k8s.io/v1
+      kind: ValidatingAdmissionPolicy
+      metadata:
+        name: safe-upgrades.gateway.networking.k8s.io
+  - patch: |-
+      $patch: delete
+      apiVersion: admissionregistration.k8s.io/v1
+      kind: ValidatingAdmissionPolicyBinding
+      metadata:
+        name: safe-upgrades.gateway.networking.k8s.io

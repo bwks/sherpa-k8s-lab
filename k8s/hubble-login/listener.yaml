@@ -1,0 +1,24 @@
+# Adds an HTTPS listener on 8443 to the `sherpa` Gateway for Hubble UI, with the Gateway's
+# certificate. Only routes in the hubble-login namespace can attach to it, so the demo app's
+# route, which attaches to every listener it is allowed on, stays off it. Apply server-side.
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: sherpa
+  namespace: default
+spec:
+  gatewayClassName: cilium
+  listeners:
+    - name: hubble
+      protocol: HTTPS
+      port: 8443
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: sherpa-gateway-tls
+      allowedRoutes:
+        namespaces:
+          from: Selector
+          selector:
+            matchLabels:
+              kubernetes.io/metadata.name: hubble-login

@@ -1,0 +1,9 @@
+# Deny all traffic into the demo namespace.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: deny-all
+  namespace: demo
+spec:
+  podSelector: {}
+  policyTypes: [Ingress]

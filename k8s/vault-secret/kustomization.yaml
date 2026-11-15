@@ -1,0 +1,7 @@
+# A secret in Vault at secret/k8s/demo, synced into the Secret `demo` by the Vault Secrets
+# Operator, and a pod that reads it from a volume.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - vault-static-secret.yaml
+  - reader.yaml

@@ -1,0 +1,20 @@
+# Mounts the synced Secret. The kubelet updates a mounted Secret's files when the Secret
+# changes, so the pod sees a new Vault value without restarting.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: reader
+  namespace: demo
+spec:
+  containers:
+    - name: reader
+      image: registry.k8s.io/e2e-test-images/agnhost:2.66.1
+      args: [pause]
+      volumeMounts:
+        - name: demo
+          mountPath: /secrets
+          readOnly: true
+  volumes:
+    - name: demo
+      secret:
+        secretName: demo

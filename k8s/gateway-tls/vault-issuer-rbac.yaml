@@ -1,0 +1,32 @@
+# The service account cert-manager logs in to Vault as, and the right for cert-manager to
+# request its tokens.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: vault-issuer
+  namespace: default
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: vault-issuer-token
+  namespace: default
+rules:
+  - apiGroups: [""]
+    resources: [serviceaccounts/token]
+    resourceNames: [vault-issuer]
+    verbs: [create]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: vault-issuer-token
+  namespace: default
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: vault-issuer-token
+subjects:
+  - kind: ServiceAccount
+    name: cert-manager
+    namespace: cert-manager

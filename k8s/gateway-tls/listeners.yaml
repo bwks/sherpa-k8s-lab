@@ -1,0 +1,21 @@
+# Adds an HTTPS listener on 443 to the `sherpa` Gateway Sherpa made. Apply it server-side:
+# listeners merge by name, so Sherpa's `http` listener on 80 and the Gateway's address stay as
+# they are.
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: sherpa
+  namespace: default
+spec:
+  gatewayClassName: cilium
+  listeners:
+    - name: https
+      protocol: HTTPS
+      port: 443
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: sherpa-gateway-tls
+      allowedRoutes:
+        namespaces:
+          from: All

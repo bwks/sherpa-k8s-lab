@@ -1,0 +1,18 @@
+# The Gateway's certificate, for its address. ${GATEWAY_IP} is filled in by envsubst.
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: sherpa-gateway
+  namespace: default
+spec:
+  secretName: sherpa-gateway-tls
+  ipAddresses:
+    - ${GATEWAY_IP}
+  duration: 720h
+  renewBefore: 240h
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  issuerRef:
+    kind: Issuer
+    name: vault

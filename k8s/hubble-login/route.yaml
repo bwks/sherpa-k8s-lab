@@ -1,0 +1,57 @@
+# Hubble UI on the Gateway's `hubble` listener. Every request is first checked by oauth2-proxy
+# (the ExternalAuth filter); oauth2-proxy's own /oauth2/ paths, such as the login callback, go
+# to it directly.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: hubble-ui
+  namespace: hubble-login
+spec:
+  parentRefs:
+    - name: sherpa
+      namespace: default
+      sectionName: hubble
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /oauth2/
+      backendRefs:
+        - name: oauth2-proxy
+          port: 4180
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      filters:
+        - type: ExternalAuth
+          externalAuth:
+            protocol: HTTP
+            backendRef:
+              name: oauth2-proxy
+              port: 4180
+            # The auth check carries the request's path, but of its headers only Host,
+            # Method, Path, Content-Length and Authorization unless more are listed.
+            # oauth2-proxy needs the session cookie.
+            http:
+              allowedHeaders: [Cookie]
+      backendRefs:
+        - name: hubble-ui
+          namespace: kube-system
+          port: 80
+---
+# Lets the route above send traffic to the hubble-ui Service in kube-system.
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: ReferenceGrant
+metadata:
+  name: hubble-login
+  namespace: kube-system
+spec:
+  from:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      namespace: hubble-login
+  to:
+    - group: ""
+      kind: Service
+      name: hubble-ui
